@@ -1,0 +1,102 @@
+#1. [2 points] General overview of the data: Machines:
+library(data.table)
+dt <- fread(file = "/Users/stellagasman/Desktop/ESADE - 2nd Term/Data Analytics with R/Challenge 1 -R/final_data/machine_data.csv", 
+            header = TRUE,
+            stringsAsFactors = TRUE, 
+            dec = ',')
+dt <- dt[complete.cases(dt)]
+head(dt)
+
+#a. How many machines are there?
+summachines <- sum(dt[, .N])
+summachines
+
+#There are 1119 machines 
+
+
+#b. What percentage of them are small? Hint: dt[,.(.N),by=column_name] will tell you how many rows in data table dt fulfill each column_name value
+sumsmall <- dt[, .N, by = .(small_machine ==1)]
+sumsmall <- sumsmall[2,2]
+sumsmall
+
+percsmall <- sumsmall / summachines
+percsmall
+
+#There are approximately 38% small machines
+
+#c. How do they distribute in terms of location type i.e. transport, petrol station?
+uniqueN(dt[, location_type])
+distloc <- dt[, .N, by = location_type]
+distloc
+
+#There are 1103 machines in transport
+#There are 16 machines at other places
+
+#Products
+dt1 <- fread(file = "/Users/stellagasman/Desktop/ESADE - 2nd Term/Data Analytics with R/Challenge 1 -R/final_data/product_data.csv",
+             header = TRUE, 
+             stringsAsFactors = FALSE, 
+             dec = '.')
+dt1 <- dt1[complete.cases(dt1)]
+head(dt1)
+
+#d. How many products are there? Which category has the highest number of products?
+
+numberp <- dt1[, Number := .(.N), by = product_name]
+numberp
+
+head(dt1)
+
+
+
+numberprod <- dt1[ , sum(Number)]
+numberprod
+
+#There are 63 products
+
+bycat <- dt1[, sum(Number), by = category]
+colnames(bycat) <- c("category","Total")
+highestprod = bycat[,which.max(bycat$Total)]
+bycat[highestprod]
+
+
+
+#The highest number of products is for Carnonates and energy drinks which is 13
+
+
+
+#e. Which category has the highest 
+avcatprice <- dt1[, mean(price), by = category]
+colnames(avcatprice) <- c("category","Total")
+highestavprice <- avcatprice[,which.max(avcatprice$Total)]
+avcatprice[highestavprice]
+
+#and lowest average price? 
+highestavprice <- avcatprice[,which.min(avcatprice$Total)]
+avcatprice[highestavprice]
+
+#The highest average price is for sugar candy and the highest average price is for Milk based
+
+#And within snacks or drinks?
+snackdrink <- dt1[, mean(price), by = type_drink_snack]
+colnames(snackdrink) <- c("Type","Mean")
+snackdrinkshighav <- snackdrink[,which.max(snackdrink$Mean)]
+snackdrinkshighav
+snackdrink[snackdrinkshighav]
+
+#The highest average price is for drink and is $3.177
+
+#Transactional data
+
+dt2 <- fread(file = "/Users/stellagasman/Desktop/ESADE - 2nd Term/Data Analytics with R/Challenge 1 -R/final_data/transactional_data.csv", 
+             header = TRUE, 
+             stringsAsFactors = FALSE)
+dt2 <- dt2[complete.cases(dt2)]
+head(dt2)
+
+#f. Restricting the transactional data to March 2017, what’s the average daily items among small and big machines?
+
+dt2 <- dt2[timestamp >= "2017-03-01" & timestamp<= "2017-03-31"]
+head(dt2)
+dt3 <- merge(dt, dt2,by.x = "machine", by.y = "machine")
+head(dt3)
