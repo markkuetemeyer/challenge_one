@@ -101,14 +101,65 @@ summary(machine$income_average)
 
 a) Are there outliers? How would you treat them? Provide code with your answer
 ```{r}
+summary(machine_data$income_average)
+plot(machine_data$income_average)
+abline(h=53777, col="green" )
+abline(h=60148,col="blue")
+abline(h=48595, col='blue')
+```
 
+Answer:Yes, there are outliers in the income_average. By looking to the median which is 53,777 and the 3rd Quartile that is 60148, we notice the max value ( 14281500) is extremely compared to this percentilence. hence, we can affirm that there are outliers.
+The existence of outliers could also have been checked by ploting the income_average's observations. As it's shown in the plot, the majority of the observations form a straight line in a bottom. However there are some observations that deviate by a large distance from this trend.These are the outilers
+The values of this outliers are probably incorrect since it's not expecting that a single vending machine has a income of million of dollars. Giving this hypothesis, we chose to remove all of the that show a income_average of more than 1000000 dollars.
+
+```{r}
+machine_data <- machine_data[machine_data$income_average < 2000000,]
 ```
 
 b) Can you give three possibilities on how to treat the NA cases? Which option you choose and why? 
 Provide code with your answer
 ```{r}
-#Zero,Median,Mean
+ibrary(tidyverse)
+map(machine_data, ~sum(is.na(.)))
+
+#1st Option - Remove the NA's
+machine_data_nonna <- na.omit(machine_data)
+
+#2nd Option - Substitute the NA's with mean/media/mode of the variable
+
+machine_data$train_AvgDailyPAssengers[which(is.na(machine_data$train_AvgDailyPassengers))] <- median(machine_data$train_AvgDailyPassengers)
+
+machine_data$train_AvgWorkingDayPassengers[which(is.na(machine_data$train_AvgWorkingDayPassengers))] <- median(machine_data$train_AvgWorkingDayPassengers)
+
+machine_data$income_average[which(is.na(machine_data$income_average))] <- median(machine_data$income_average)
+
+machine_data$total_number_of_routes_600[which(is.na(machine_data$total_number_of_routes_600))] <- median(machine_data$total_number_of_routes_600)
+
 ```
+
+The last step is to take care of the categorical data. 
+So we can replace the NA in location_type for the mode which is transport
+```{r}
+table(machine_data$location_type)
+machine_data$location_type[which(is.na(machine_data$location_type))] <- 'transport'
+```
+
+3rd Option - Replace the NA's by predictions of K-nearest Neighbors 
+
+```{r}
+install.packages('VIM')
+library(VIM)
+machine_dataKNN <- kNN(machine_data)
+machine_data <- subset(machine_dataKNN, select = machine : small_machine)
+machine_data
+```
+
+The best options for this specific dataset are the 2nd and the 3rd options, since almost half of the observation contain NA values. If we use the 1st method and drop these observations we loose a significant part of the data.
+
+Regarding the 2nd and the 3rd method, although replacing the NA values by median/mean is the easiest option we believe that this method can bring us problems of skewedness towards the mean, and can lead us to false conclusions. Giving this we opted for the 3rd method.
+
+
+
 
 
 
